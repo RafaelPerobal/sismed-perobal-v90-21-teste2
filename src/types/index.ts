@@ -1,4 +1,3 @@
-
 // Modelo de Paciente
 export interface Patient {
   id: number;
@@ -62,4 +61,9 @@ export interface MultiplePrescriptionsData {
   medicamentos: PrescriptionMedicine[];
   observacoes: string;
   datas: PrescriptionDateConfig[];
+}
+
+// Configuração para impressão
+export interface PrintConfig {
+  showButtons: boolean;
 }
