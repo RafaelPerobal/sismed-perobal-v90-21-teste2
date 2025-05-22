@@ -19,6 +19,7 @@ const ObservationsInput = ({ value, onChange }: ObservationsInputProps) => {
         value={value}
         onChange={onChange}
         rows={3}
+        className="w-full print:border-none print:bg-white"
       />
     </div>
   );

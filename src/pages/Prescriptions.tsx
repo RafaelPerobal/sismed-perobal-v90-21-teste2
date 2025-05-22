@@ -24,10 +24,27 @@ import { format } from 'date-fns';
 // CSS para impressão - esconder elementos e ajustar estilo
 const printStyles = `
   @media print {
-    body {
+    body * {
+      visibility: hidden;
+    }
+    
+    .print-container, .print-container * {
+      visibility: visible !important;
+    }
+    
+    .print-container {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      padding: 20px;
       font-family: "Courier New", monospace; /* Emula a fonte Epson */
       font-size: 12pt;
       line-height: 1.3;
+    }
+    
+    .print-header {
+      margin-bottom: 30px;
     }
     
     .no-print, .no-print * {
@@ -36,15 +53,6 @@ const printStyles = `
     
     .print-only {
       display: block !important;
-    }
-    
-    .print-container {
-      width: 100%;
-      padding: 20px;
-    }
-    
-    .print-header {
-      margin-bottom: 30px;
     }
     
     button, .tabs-container, nav {
