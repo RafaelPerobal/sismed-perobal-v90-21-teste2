@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { toast } from "@/components/ui/use-toast";
 import { 
   addPrescription, 
   getPatientById, 
@@ -14,34 +13,20 @@ import {
   Doctor, 
   Prescription, 
   PrescriptionMedicine,
-  PrescriptionDateConfig,
-  MultiplePrescriptionsData 
+  PrescriptionDateConfig
 } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Trash2, FileText } from "lucide-react";
+import { Plus } from "lucide-react";
+
+// Import our new components
 import PrescriptionDateSelector from './PrescriptionDateSelector';
-import { format, addMonths } from 'date-fns';
+import DoctorSelector from './prescription/DoctorSelector';
+import MedicineSearch from './prescription/MedicineSearch';
+import PosologyInput from './prescription/PosologyInput';
+import MedicineList from './prescription/MedicineList';
+import ObservationsInput from './prescription/ObservationsInput';
 
 interface PrescriptionFormProps {
   patientId?: number;
@@ -68,7 +53,7 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
     observacoes: '',
   });
 
-  // Carregar médicos e paciente selecionado
+  // Load doctors and selected patient
   useEffect(() => {
     setDoctors(getDoctors());
     setAllMedicines(getMedicines());
@@ -81,10 +66,10 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
     }
   }, [patientId]);
 
-  // Obter nome do paciente
+  // Get patient name
   const patientName = patientId ? getPatientById(patientId)?.nome || "" : "";
 
-  // Filtrar medicamentos com a pesquisa
+  // Filter medicines with search
   const filteredMedicines = allMedicines.filter(med => 
     med.nome.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -118,7 +103,7 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
       medicamentos: [...formData.medicamentos, newMedication]
     });
 
-    // Limpar os campos
+    // Clear fields
     setSelectedMedicine(null);
     setPosologia("");
   };
@@ -154,11 +139,11 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
     }
 
     try {
-      // Verificar se estamos gerando múltiplas receitas
+      // Check if we're generating multiple prescriptions
       const enabledDates = prescriptionDates.filter(d => d.enabled);
       
       if (enabledDates.length > 1) {
-        // Gerar múltiplas receitas
+        // Generate multiple prescriptions
         enabledDates.forEach((dateConfig) => {
           const prescriptionData = {
             ...formData,
@@ -173,7 +158,7 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
           description: `Foram geradas ${enabledDates.length} receitas com sucesso`,
         });
       } else if (enabledDates.length === 1) {
-        // Gerar uma única receita com a data selecionada
+        // Generate a single prescription with the selected date
         const prescriptionData = {
           ...formData,
           data: enabledDates[0].date
@@ -195,7 +180,7 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
         return;
       }
       
-      // Limpar o formulário
+      // Clear the form
       setFormData({
         pacienteId: patientId || 0,
         medicoId: 0,
@@ -204,7 +189,7 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
         observacoes: '',
       });
       
-      // Resetar datas
+      // Reset dates
       setPrescriptionDates([{ 
         enabled: true, 
         date: new Date().toISOString().split('T')[0] 
@@ -222,7 +207,7 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
     }
   };
 
-  // Função para obter o medicamento pelo ID
+  // Function to get medicine by ID
   const getMedicineInfo = (id: number): Medicine | undefined => {
     return getMedicineById(id);
   };
@@ -245,24 +230,11 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="medicoId">Médico</Label>
-            <Select
-              value={formData.medicoId.toString()}
-              onValueChange={handleDoctorChange}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o médico" />
-              </SelectTrigger>
-              <SelectContent>
-                {doctors.map((doctor) => (
-                  <SelectItem key={doctor.id} value={doctor.id.toString()}>
-                    {doctor.nome} - CRM: {doctor.crm}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <DoctorSelector 
+            doctors={doctors} 
+            selectedDoctorId={formData.medicoId}
+            onChange={handleDoctorChange}
+          />
           
           <div className="space-y-2">
             <PrescriptionDateSelector 
@@ -280,144 +252,35 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
           </TabsList>
           
           <TabsContent value="add" className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Search className="h-5 w-5 text-gray-400" />
-              <Input
-                placeholder="Buscar medicamento"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+            <MedicineSearch
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              filteredMedicines={filteredMedicines}
+              selectedMedicine={selectedMedicine}
+              setSelectedMedicine={setSelectedMedicine}
+            />
             
-            <div className="border rounded-md max-h-60 overflow-y-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Dosagem</TableHead>
-                    <TableHead>Apresentação</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredMedicines.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">
-                        Nenhum medicamento encontrado
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredMedicines.map((med) => (
-                      <TableRow key={med.id} className={med.id === selectedMedicine ? "bg-health-100" : ""}>
-                        <TableCell>{med.nome}</TableCell>
-                        <TableCell>{med.dosagem}</TableCell>
-                        <TableCell>{med.apresentacao}</TableCell>
-                        <TableCell>
-                          <Button
-                            type="button"
-                            variant={med.id === selectedMedicine ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setSelectedMedicine(med.id === selectedMedicine ? null : med.id)}
-                          >
-                            {med.id === selectedMedicine ? "Selecionado" : "Selecionar"}
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="posologia">Posologia</Label>
-              <Textarea
-                id="posologia"
-                value={posologia}
-                onChange={(e) => setPosologia(e.target.value)}
-                placeholder="Ex: Tomar 1 comprimido a cada 8 horas por 7 dias"
-                rows={2}
-              />
-            </div>
-            
-            <Button
-              type="button"
-              onClick={addMedicineToList}
-              className="w-full bg-health-600 hover:bg-health-700"
-              disabled={!selectedMedicine || !posologia}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar Medicamento à Receita
-            </Button>
+            <PosologyInput
+              posologia={posologia}
+              setPosologia={setPosologia}
+              selectedMedicine={selectedMedicine}
+              onAddMedicine={addMedicineToList}
+            />
           </TabsContent>
           
           <TabsContent value="list">
-            {formData.medicamentos.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                Nenhum medicamento adicionado à receita
-              </div>
-            ) : (
-              <div className="border rounded-md">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Medicamento</TableHead>
-                      <TableHead>Posologia</TableHead>
-                      <TableHead className="w-16"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {formData.medicamentos.map((med, index) => {
-                      const medicine = getMedicineInfo(med.medicamentoId);
-                      return (
-                        <TableRow key={index}>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">{medicine?.nome}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {medicine?.dosagem} - {medicine?.apresentacao}
-                              </p>
-                            </div>
-                          </TableCell>
-                          <TableCell>{med.posologia}</TableCell>
-                          <TableCell>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeMedicine(index)}
-                              className="text-red-500 hover:text-red-700"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-            
-            <div className="mt-4">
-              <Badge variant="secondary" className="mr-2">
-                Total: {formData.medicamentos.length} medicamentos
-              </Badge>
-            </div>
+            <MedicineList
+              medicines={formData.medicamentos}
+              onRemove={removeMedicine}
+              getMedicineInfo={getMedicineInfo}
+            />
           </TabsContent>
         </Tabs>
 
-        <div className="space-y-2">
-          <Label htmlFor="observacoes">Observações</Label>
-          <Textarea
-            id="observacoes"
-            name="observacoes"
-            placeholder="Observações adicionais para a receita"
-            value={formData.observacoes}
-            onChange={handleChange}
-            rows={3}
-          />
-        </div>
+        <ObservationsInput
+          value={formData.observacoes}
+          onChange={handleChange}
+        />
         
         <div className="flex justify-end">
           <Button
