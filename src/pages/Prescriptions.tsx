@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -20,6 +19,7 @@ import {
 } from '@/utils/storage';
 import { useToast } from '@/hooks/use-toast';
 import { Search, Plus, FileText, User, FileDown, Trash2, Calendar } from 'lucide-react';
+import { format } from 'date-fns';
 
 const Prescriptions = () => {
   const { toast } = useToast();
@@ -114,7 +114,7 @@ const Prescriptions = () => {
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "";
     const date = new Date(dateStr);
-    return date.toLocaleDateString('pt-BR');
+    return format(date, 'dd/MM/yyyy');
   };
   
   const getDoctor = (id: number): Doctor | undefined => {
@@ -123,6 +123,16 @@ const Prescriptions = () => {
   
   const getMedicine = (id: number): Medicine | undefined => {
     return getMedicineById(id);
+  };
+  
+  // Função para preparar o nome do arquivo para download
+  const generatePrescriptionFilename = (prescription: Prescription, patient: Patient | undefined) => {
+    if (!patient) return `receita_${prescription.id}`;
+    
+    const prescDate = formatDate(prescription.data).replace(/\//g, '-');
+    const patientName = patient.nome.replace(/\s+/g, '_').toLowerCase();
+    
+    return `receita_${patientName}_${prescDate}`;
   };
   
   return (
@@ -376,8 +386,12 @@ const Prescriptions = () => {
               <Card className="p-6">
                 <div className="border-b pb-4 mb-6">
                   <div className="text-center">
+                    <img 
+                      src="/lovable-uploads/dd0eb29a-ace6-48d6-b08e-d12b6867c292.png" 
+                      alt="Prefeitura Municipal de Perobal" 
+                      className="mx-auto mb-4 max-h-32"
+                    />
                     <h2 className="text-2xl font-bold mb-1">Receituário Médico</h2>
-                    <p className="text-gray-600">Prefeitura Municipal de Perobal</p>
                   </div>
                 </div>
                 
@@ -464,7 +478,8 @@ const Prescriptions = () => {
                     className="bg-health-600 hover:bg-health-700"
                   >
                     <FileDown className="mr-1 h-4 w-4" />
-                    Imprimir
+                    {/* Nome do arquivo baseado no nome do paciente e data */}
+                    Imprimir {generatePrescriptionFilename(selectedPrescription, selectedPatient)}
                   </Button>
                 </div>
               </Card>

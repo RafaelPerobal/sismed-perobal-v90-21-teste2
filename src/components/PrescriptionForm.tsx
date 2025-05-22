@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { 
   addPrescription, 
   getPatientById, 
@@ -8,7 +9,14 @@ import {
   getMedicines, 
   getMedicineById 
 } from '@/utils/storage';
-import { Medicine, Doctor, Prescription, PrescriptionMedicine } from '@/types';
+import { 
+  Medicine, 
+  Doctor, 
+  Prescription, 
+  PrescriptionMedicine,
+  PrescriptionDateConfig,
+  MultiplePrescriptionsData 
+} from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -31,7 +39,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Trash2 } from "lucide-react";
+import { Search, Plus, Trash2, FileText } from "lucide-react";
+import PrescriptionDateSelector from './PrescriptionDateSelector';
+import { format, addMonths } from 'date-fns';
 
 interface PrescriptionFormProps {
   patientId?: number;
@@ -46,6 +56,9 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMedicine, setSelectedMedicine] = useState<number | null>(null);
   const [posologia, setPosologia] = useState("");
+  const [prescriptionDates, setPrescriptionDates] = useState<PrescriptionDateConfig[]>([
+    { enabled: true, date: new Date().toISOString().split('T')[0] }
+  ]);
   
   const [formData, setFormData] = useState<Omit<Prescription, 'id'>>({
     pacienteId: patientId || 0,
@@ -141,11 +154,46 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
     }
 
     try {
-      addPrescription(formData);
-      toast({
-        title: "Receita gerada",
-        description: "A receita foi gerada com sucesso",
-      });
+      // Verificar se estamos gerando múltiplas receitas
+      const enabledDates = prescriptionDates.filter(d => d.enabled);
+      
+      if (enabledDates.length > 1) {
+        // Gerar múltiplas receitas
+        enabledDates.forEach((dateConfig) => {
+          const prescriptionData = {
+            ...formData,
+            data: dateConfig.date
+          };
+          
+          addPrescription(prescriptionData);
+        });
+        
+        toast({
+          title: `${enabledDates.length} receitas geradas`,
+          description: `Foram geradas ${enabledDates.length} receitas com sucesso`,
+        });
+      } else if (enabledDates.length === 1) {
+        // Gerar uma única receita com a data selecionada
+        const prescriptionData = {
+          ...formData,
+          data: enabledDates[0].date
+        };
+        
+        addPrescription(prescriptionData);
+        
+        toast({
+          title: "Receita gerada",
+          description: "A receita foi gerada com sucesso",
+        });
+      } else {
+        toast({
+          title: "Nenhuma data selecionada",
+          description: "Selecione pelo menos uma data para gerar a receita",
+          variant: "destructive"
+        });
+        setIsSubmitting(false);
+        return;
+      }
       
       // Limpar o formulário
       setFormData({
@@ -155,6 +203,12 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
         medicamentos: [],
         observacoes: '',
       });
+      
+      // Resetar datas
+      setPrescriptionDates([{ 
+        enabled: true, 
+        date: new Date().toISOString().split('T')[0] 
+      }]);
       
       if (onSuccess) onSuccess();
     } catch (error) {
@@ -192,18 +246,6 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="data">Data da Receita</Label>
-            <Input
-              id="data"
-              name="data"
-              type="date"
-              value={formData.data}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
             <Label htmlFor="medicoId">Médico</Label>
             <Select
               value={formData.medicoId.toString()}
@@ -220,6 +262,14 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <PrescriptionDateSelector 
+              dates={prescriptionDates}
+              onChange={setPrescriptionDates}
+              initialDate={formData.data}
+            />
           </div>
         </div>
 
@@ -375,7 +425,9 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
             className="bg-health-600 hover:bg-health-700"
             disabled={isSubmitting || !patientId || formData.medicamentos.length === 0}
           >
-            {isSubmitting ? 'Gerando...' : 'Gerar Receita'}
+            {isSubmitting ? 'Gerando...' : prescriptionDates.filter(d => d.enabled).length > 1 
+              ? `Gerar ${prescriptionDates.filter(d => d.enabled).length} Receitas` 
+              : 'Gerar Receita'}
           </Button>
         </div>
       </form>
