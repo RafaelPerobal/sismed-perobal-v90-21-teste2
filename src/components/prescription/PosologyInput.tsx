@@ -27,7 +27,8 @@ const PosologyInput = ({
           value={posologia}
           onChange={(e) => setPosologia(e.target.value)}
           placeholder="Ex: Tomar 1 comprimido a cada 8 horas por 7 dias"
-          rows={2}
+          rows={3}
+          className="w-full print:border-none print:bg-white"
         />
       </div>
       
@@ -35,7 +36,7 @@ const PosologyInput = ({
         type="button"
         onClick={onAddMedicine}
         className="w-full bg-health-600 hover:bg-health-700"
-        disabled={!selectedMedicine || !posologia}
+        disabled={!selectedMedicine}
       >
         <Plus className="mr-2 h-4 w-4" />
         Adicionar Medicamento à Receita
