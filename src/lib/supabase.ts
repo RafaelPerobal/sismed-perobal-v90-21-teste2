@@ -1,13 +1,8 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// The API keys are stored securely in Lovable's environment
-// and injected at build time
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Supabase credentials not found. Please make sure they are properly set in the environment variables.');
-}
+// Using direct values since environment variables aren't properly configured
+const supabaseUrl = 'https://ctuosmgmdhfpkpsojgbe.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0dW9zbWdtZGhmcGtwc29qZ2JlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5MTcwNjgsImV4cCI6MjA2MzQ5MzA2OH0.EKAXSaOXJRVqAFyeKxNdTsPVgK8T8LQYq4gpDScgN30';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
