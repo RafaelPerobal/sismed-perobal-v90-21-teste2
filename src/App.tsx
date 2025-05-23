@@ -10,6 +10,10 @@ import Patients from "./pages/Patients";
 import Medicines from "./pages/Medicines";
 import Doctors from "./pages/Doctors";
 import Prescriptions from "./pages/Prescriptions";
+import { supabase } from "@/lib/supabase";
+
+// Initialize Supabase client
+console.log("Supabase initialized:", !!supabase);
 
 const queryClient = new QueryClient();
 
