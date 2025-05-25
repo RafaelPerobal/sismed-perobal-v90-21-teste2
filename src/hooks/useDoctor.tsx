@@ -70,7 +70,7 @@ export const useDoctor = () => {
         .insert([{
           user_id: user.id,
           ...doctorData
-        }])
+        }] as any)
         .select()
         .single();
 
@@ -102,7 +102,7 @@ export const useDoctor = () => {
     try {
       const { data, error } = await supabase
         .from('doctors' as any)
-        .update(doctorData)
+        .update(doctorData as any)
         .eq('user_id', user.id)
         .select()
         .single();
