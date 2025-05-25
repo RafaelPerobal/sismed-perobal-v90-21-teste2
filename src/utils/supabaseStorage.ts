@@ -45,10 +45,10 @@ export interface SupabasePrescriptionMedicine {
   posologia: string;
 }
 
-// Funções para Pacientes
+// Funções para Pacientes - usando cast temporal para evitar erros de tipo
 export const getSupabasePatients = async (): Promise<SupabasePatient[]> => {
   const { data, error } = await supabase
-    .from('patients')
+    .from('patients' as any)
     .select('*')
     .order('nome');
   
@@ -58,7 +58,7 @@ export const getSupabasePatients = async (): Promise<SupabasePatient[]> => {
 
 export const addSupabasePatient = async (patient: Omit<SupabasePatient, 'id'>): Promise<SupabasePatient> => {
   const { data, error } = await supabase
-    .from('patients')
+    .from('patients' as any)
     .insert([patient])
     .select()
     .single();
@@ -69,7 +69,7 @@ export const addSupabasePatient = async (patient: Omit<SupabasePatient, 'id'>): 
 
 export const updateSupabasePatient = async (patient: SupabasePatient): Promise<SupabasePatient> => {
   const { data, error } = await supabase
-    .from('patients')
+    .from('patients' as any)
     .update(patient)
     .eq('id', patient.id)
     .select()
@@ -81,7 +81,7 @@ export const updateSupabasePatient = async (patient: SupabasePatient): Promise<S
 
 export const deleteSupabasePatient = async (id: string): Promise<void> => {
   const { error } = await supabase
-    .from('patients')
+    .from('patients' as any)
     .delete()
     .eq('id', id);
   
@@ -91,7 +91,7 @@ export const deleteSupabasePatient = async (id: string): Promise<void> => {
 // Funções para Medicamentos
 export const getSupabaseMedicines = async (): Promise<SupabaseMedicine[]> => {
   const { data, error } = await supabase
-    .from('medicines')
+    .from('medicines' as any)
     .select('*')
     .order('nome');
   
@@ -101,7 +101,7 @@ export const getSupabaseMedicines = async (): Promise<SupabaseMedicine[]> => {
 
 export const addSupabaseMedicine = async (medicine: Omit<SupabaseMedicine, 'id'>): Promise<SupabaseMedicine> => {
   const { data, error } = await supabase
-    .from('medicines')
+    .from('medicines' as any)
     .insert([medicine])
     .select()
     .single();
@@ -112,7 +112,7 @@ export const addSupabaseMedicine = async (medicine: Omit<SupabaseMedicine, 'id'>
 
 export const updateSupabaseMedicine = async (medicine: SupabaseMedicine): Promise<SupabaseMedicine> => {
   const { data, error } = await supabase
-    .from('medicines')
+    .from('medicines' as any)
     .update(medicine)
     .eq('id', medicine.id)
     .select()
@@ -124,7 +124,7 @@ export const updateSupabaseMedicine = async (medicine: SupabaseMedicine): Promis
 
 export const deleteSupabaseMedicine = async (id: string): Promise<void> => {
   const { error } = await supabase
-    .from('medicines')
+    .from('medicines' as any)
     .delete()
     .eq('id', id);
   
@@ -134,7 +134,7 @@ export const deleteSupabaseMedicine = async (id: string): Promise<void> => {
 // Funções para Receitas
 export const getSupabasePrescriptions = async (doctorId: string): Promise<SupabasePrescription[]> => {
   const { data, error } = await supabase
-    .from('prescriptions')
+    .from('prescriptions' as any)
     .select('*')
     .eq('doctor_id', doctorId)
     .order('data', { ascending: false });
@@ -145,7 +145,7 @@ export const getSupabasePrescriptions = async (doctorId: string): Promise<Supaba
 
 export const addSupabasePrescription = async (prescription: Omit<SupabasePrescription, 'id'>): Promise<SupabasePrescription> => {
   const { data, error } = await supabase
-    .from('prescriptions')
+    .from('prescriptions' as any)
     .insert([prescription])
     .select()
     .single();
@@ -156,7 +156,7 @@ export const addSupabasePrescription = async (prescription: Omit<SupabasePrescri
 
 export const deleteSupabasePrescription = async (id: string): Promise<void> => {
   const { error } = await supabase
-    .from('prescriptions')
+    .from('prescriptions' as any)
     .delete()
     .eq('id', id);
   
@@ -166,7 +166,7 @@ export const deleteSupabasePrescription = async (id: string): Promise<void> => {
 // Funções para Medicamentos da Receita
 export const getPrescriptionMedicines = async (prescriptionId: string): Promise<SupabasePrescriptionMedicine[]> => {
   const { data, error } = await supabase
-    .from('prescription_medicines')
+    .from('prescription_medicines' as any)
     .select('*')
     .eq('prescription_id', prescriptionId);
   
@@ -176,7 +176,7 @@ export const getPrescriptionMedicines = async (prescriptionId: string): Promise<
 
 export const addPrescriptionMedicine = async (prescriptionMedicine: Omit<SupabasePrescriptionMedicine, 'id'>): Promise<SupabasePrescriptionMedicine> => {
   const { data, error } = await supabase
-    .from('prescription_medicines')
+    .from('prescription_medicines' as any)
     .insert([prescriptionMedicine])
     .select()
     .single();
