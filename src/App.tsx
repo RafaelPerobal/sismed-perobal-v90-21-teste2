@@ -4,15 +4,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/hooks/useAuth";
-import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Patients from "./pages/Patients";
 import Medicines from "./pages/Medicines";
 import Doctors from "./pages/Doctors";
 import Prescriptions from "./pages/Prescriptions";
-import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
 
@@ -22,37 +19,15 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Index />
-              </ProtectedRoute>
-            } />
-            <Route path="/patients" element={
-              <ProtectedRoute>
-                <Patients />
-              </ProtectedRoute>
-            } />
-            <Route path="/medicines" element={
-              <ProtectedRoute>
-                <Medicines />
-              </ProtectedRoute>
-            } />
-            <Route path="/doctors" element={
-              <ProtectedRoute>
-                <Doctors />
-              </ProtectedRoute>
-            } />
-            <Route path="/prescriptions" element={
-              <ProtectedRoute>
-                <Prescriptions />
-              </ProtectedRoute>
-            } />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/patients" element={<Patients />} />
+          <Route path="/medicines" element={<Medicines />} />
+          <Route path="/doctors" element={<Doctors />} />
+          <Route path="/prescriptions" element={<Prescriptions />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

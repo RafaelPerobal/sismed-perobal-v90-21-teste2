@@ -1,30 +1,14 @@
 
 import { Link, useLocation } from 'react-router-dom';
-import { User, FileText, Stethoscope, Pill, LogOut } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { useDoctor } from '@/hooks/useDoctor';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { User, FileText, Stethoscope, Pill } from 'lucide-react';
 
 const Navbar = () => {
   const location = useLocation();
-  const { signOut } = useAuth();
-  const { doctor } = useDoctor();
 
   const isActive = (path: string) => {
     return location.pathname === path ? 
       'bg-health-600 text-white' : 
       'text-gray-700 hover:bg-health-100';
-  };
-
-  const handleLogout = async () => {
-    await signOut();
   };
 
   return (
@@ -73,39 +57,6 @@ const Navbar = () => {
                 </Link>
               </div>
             </div>
-          </div>
-          
-          {/* User Menu */}
-          <div className="flex items-center space-x-4">
-            {doctor && (
-              <span className="text-sm text-gray-600 hidden md:block">
-                Dr(a). {doctor.nome}
-              </span>
-            )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full">
-                  <User className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {doctor && (
-                  <>
-                    <div className="px-2 py-1.5 text-sm font-medium">
-                      Dr(a). {doctor.nome}
-                    </div>
-                    <div className="px-2 py-1.5 text-xs text-gray-500">
-                      CRM: {doctor.crm}
-                    </div>
-                    <DropdownMenuSeparator />
-                  </>
-                )}
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sair
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         </div>
       </div>
