@@ -1,21 +1,17 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { toast } from "@/components/ui/use-toast";
 import { 
   addPrescription, 
   getPatientById, 
-  getDoctors, 
   getMedicines, 
   getMedicineById 
 } from '@/utils/storage';
 import { 
   Medicine, 
-  Doctor, 
   Prescription, 
   PrescriptionMedicine,
-  PrescriptionDateConfig,
-  MultiplePrescriptionsData 
+  PrescriptionDateConfig
 } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,17 +27,9 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Trash2, FileText } from "lucide-react";
+import { Search, Plus, Trash2 } from "lucide-react";
 import PrescriptionDateSelector from './PrescriptionDateSelector';
-import { format, addMonths } from 'date-fns';
 
 interface PrescriptionFormProps {
   patientId?: number;
@@ -51,7 +39,6 @@ interface PrescriptionFormProps {
 const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [allMedicines, setAllMedicines] = useState<Medicine[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMedicine, setSelectedMedicine] = useState<number | null>(null);
@@ -62,15 +49,13 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
   
   const [formData, setFormData] = useState<Omit<Prescription, 'id'>>({
     pacienteId: patientId || 0,
-    medicoId: 0,
     data: new Date().toISOString().split('T')[0],
     medicamentos: [],
     observacoes: '',
   });
 
-  // Carregar médicos e paciente selecionado
+  // Carregar medicamentos
   useEffect(() => {
-    setDoctors(getDoctors());
     setAllMedicines(getMedicines());
     
     if (patientId) {
@@ -89,13 +74,9 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
     med.nome.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-  };
-  
-  const handleDoctorChange = (value: string) => {
-    setFormData({ ...formData, medicoId: Number(value) });
   };
 
   const addMedicineToList = () => {
@@ -137,16 +118,6 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
       toast({
         title: "Lista vazia",
         description: "Adicione pelo menos um medicamento à receita",
-        variant: "destructive"
-      });
-      setIsSubmitting(false);
-      return;
-    }
-    
-    if (!formData.medicoId) {
-      toast({
-        title: "Médico não selecionado",
-        description: "Selecione um médico para a receita",
         variant: "destructive"
       });
       setIsSubmitting(false);
@@ -198,7 +169,6 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
       // Limpar o formulário
       setFormData({
         pacienteId: patientId || 0,
-        medicoId: 0,
         data: new Date().toISOString().split('T')[0],
         medicamentos: [],
         observacoes: '',
@@ -244,33 +214,12 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
       )}
       
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="medicoId">Médico</Label>
-            <Select
-              value={formData.medicoId.toString()}
-              onValueChange={handleDoctorChange}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o médico" />
-              </SelectTrigger>
-              <SelectContent>
-                {doctors.map((doctor) => (
-                  <SelectItem key={doctor.id} value={doctor.id.toString()}>
-                    {doctor.nome} - CRM: {doctor.crm}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <PrescriptionDateSelector 
-              dates={prescriptionDates}
-              onChange={setPrescriptionDates}
-              initialDate={formData.data}
-            />
-          </div>
+        <div className="space-y-2">
+          <PrescriptionDateSelector 
+            dates={prescriptionDates}
+            onChange={setPrescriptionDates}
+            initialDate={formData.data}
+          />
         </div>
 
         <Tabs defaultValue="add" className="w-full">

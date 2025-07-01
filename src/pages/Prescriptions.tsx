@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -6,11 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Patient, Prescription, Doctor, Medicine } from '@/types';
+import { Patient, Prescription, Medicine } from '@/types';
 import { 
   getPrescriptions, 
   getPatientById,
-  getDoctorById,
   getMedicineById,
   findPatientByCpf,
   findPatientsByName,
@@ -18,14 +18,14 @@ import {
   deletePrescription
 } from '@/utils/storage';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Plus, FileText, User, FileDown, Trash2, Calendar, Printer } from 'lucide-react';
+import { Search, Plus, FileText, User, Trash2, Calendar, Printer } from 'lucide-react';
 import { format } from 'date-fns';
 
 // CSS para impressão - esconder elementos e ajustar estilo
 const printStyles = `
   @media print {
     body {
-      font-family: "Courier New", monospace; /* Emula a fonte Epson */
+      font-family: "Courier New", monospace;
       font-size: 12pt;
       line-height: 1.3;
     }
@@ -166,22 +166,8 @@ const Prescriptions = () => {
     return format(date, 'dd/MM/yyyy');
   };
   
-  const getDoctor = (id: number): Doctor | undefined => {
-    return getDoctorById(id);
-  };
-  
   const getMedicine = (id: number): Medicine | undefined => {
     return getMedicineById(id);
-  };
-  
-  // Função para preparar o nome do arquivo para download
-  const generatePrescriptionFilename = (prescription: Prescription, patient: Patient | undefined) => {
-    if (!patient) return `receita_${prescription.id}`;
-    
-    const prescDate = formatDate(prescription.data).replace(/\//g, '-');
-    const patientName = patient.nome.replace(/\s+/g, '_').toLowerCase();
-    
-    return `receita_${patientName}_${prescDate}`;
   };
   
   return (
@@ -359,9 +345,6 @@ const Prescriptions = () => {
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Data
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
-                              Médico
-                            </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Medicamentos
                             </th>
@@ -371,42 +354,36 @@ const Prescriptions = () => {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {prescriptions.map((prescription) => {
-                            const doctor = getDoctor(prescription.medicoId);
-                            return (
-                              <tr key={prescription.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                  {formatDate(prescription.data)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
-                                  {doctor?.nome || ""}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {prescription.medicamentos.length} itens
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                  <Button
-                                    onClick={() => handleViewPrescription(prescription.id)}
-                                    size="sm"
-                                    variant="ghost"
-                                    className="text-blue-600 hover:text-blue-800"
-                                  >
-                                    <FileText className="h-4 w-4" />
-                                    <span className="sr-only">Visualizar</span>
-                                  </Button>
-                                  <Button
-                                    onClick={() => handleDeletePrescription(prescription.id)}
-                                    size="sm"
-                                    variant="ghost"
-                                    className="text-red-500 hover:text-red-700 ml-2"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                    <span className="sr-only">Excluir</span>
-                                  </Button>
-                                </td>
-                              </tr>
-                            );
-                          })}
+                          {prescriptions.map((prescription) => (
+                            <tr key={prescription.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {formatDate(prescription.data)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {prescription.medicamentos.length} itens
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <Button
+                                  onClick={() => handleViewPrescription(prescription.id)}
+                                  size="sm"
+                                  variant="ghost"
+                                  className="text-blue-600 hover:text-blue-800"
+                                >
+                                  <FileText className="h-4 w-4" />
+                                  <span className="sr-only">Visualizar</span>
+                                </Button>
+                                <Button
+                                  onClick={() => handleDeletePrescription(prescription.id)}
+                                  size="sm"
+                                  variant="ghost"
+                                  className="text-red-500 hover:text-red-700 ml-2"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  <span className="sr-only">Excluir</span>
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
                         </tbody>
                       </table>
                     </div>
@@ -474,12 +451,6 @@ const Prescriptions = () => {
                         </h3>
                         <div className="space-y-1 text-sm">
                           <p>
-                            <span className="font-medium">Médico:</span> {getDoctor(selectedPrescription.medicoId)?.nome}
-                          </p>
-                          <p>
-                            <span className="font-medium">CRM:</span> {getDoctor(selectedPrescription.medicoId)?.crm}
-                          </p>
-                          <p>
                             <span className="font-medium">Data:</span> {formatDate(selectedPrescription.data)}
                           </p>
                           <p>
@@ -515,8 +486,7 @@ const Prescriptions = () => {
                     <div className="mt-8 pt-8 border-t">
                       <div className="flex justify-center">
                         <div className="text-center w-64 border-t border-black pt-2">
-                          <p className="text-sm">Assinatura do Médico</p>
-                          <p className="text-xs mt-1">CRM: {getDoctor(selectedPrescription.medicoId)?.crm}</p>
+                          <p className="text-sm">Assinatura do Profissional</p>
                         </div>
                       </div>
                     </div>
@@ -609,8 +579,7 @@ const Prescriptions = () => {
                     <div className="mt-12 pt-4">
                       <div className="flex justify-center">
                         <div className="text-center border-t border-black pt-1" style={{width: '200px'}}>
-                          <p>{getDoctor(selectedPrescription.medicoId)?.nome}</p>
-                          <p>CRM: {getDoctor(selectedPrescription.medicoId)?.crm}</p>
+                          <p>Assinatura do Profissional</p>
                         </div>
                       </div>
                     </div>

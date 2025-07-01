@@ -1,3 +1,4 @@
+
 // Modelo de Paciente
 export interface Patient {
   id: number;
@@ -22,20 +23,10 @@ export interface Medicine {
   apresentacao: string; // Ex: comprimido, xarope, injeção
 }
 
-// Modelo de Médico
-export interface Doctor {
-  id: number;
-  nome: string;
-  crm: string;
-  especialidade: string;
-  contato: string;
-}
-
-// Modelo de Receita
+// Modelo de Receita (sem referência ao médico)
 export interface Prescription {
   id: number;
   pacienteId: number;
-  medicoId: number;
   data: string;
   dataVencimento?: string; // Data de vencimento opcional
   medicamentos: PrescriptionMedicine[];
@@ -54,10 +45,9 @@ export interface PrescriptionDateConfig {
   date: string;
 }
 
-// Objeto para geração de múltiplas receitas
+// Objeto para geração de múltiplas receitas (sem médico)
 export interface MultiplePrescriptionsData {
   pacienteId: number;
-  medicoId: number;
   medicamentos: PrescriptionMedicine[];
   observacoes: string;
   datas: PrescriptionDateConfig[];
