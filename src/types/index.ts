@@ -1,12 +1,12 @@
-
-// Modelo de Paciente
+// Modelo de Paciente (simplificado - campos essenciais)
 export interface Patient {
   id: number;
-  cpf: string;
+  nome: string; // Campo obrigatório
+  cpf: string; // Campo opcional
+  dataNascimento: string; // Campo opcional
+  // Campos mantidos para compatibilidade com código existente, mas não usados nos formulários
   cartaoSus: string;
   codCid: string;
-  nome: string;
-  dataNascimento: string;
   nomeMae: string;
   endereco: string;
   contato: string;
@@ -14,13 +14,14 @@ export interface Patient {
   observacao: string;
 }
 
-// Modelo de Medicamento
+// Modelo de Medicamento (simplificado)
 export interface Medicine {
   id: number;
-  nome: string;
-  descricao: string;
-  dosagem: string;
+  nome: string; // Denominação Genérica
+  dosagem: string; // Concentração 
   apresentacao: string; // Ex: comprimido, xarope, injeção
+  // Campo mantido para compatibilidade, mas removido do formulário
+  descricao: string;
 }
 
 // Modelo de Receita (sem referência ao médico)

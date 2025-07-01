@@ -5,7 +5,6 @@ import { addPatient, updatePatient } from '@/utils/storage';
 import { Patient } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 
@@ -19,19 +18,20 @@ const PatientForm = ({ initialData, onSuccess }: PatientFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState<Omit<Patient, 'id'>>({
-    cpf: initialData?.cpf || '',
-    cartaoSus: initialData?.cartaoSus || '',
-    codCid: initialData?.codCid || '',
     nome: initialData?.nome || '',
+    cpf: initialData?.cpf || '',
     dataNascimento: initialData?.dataNascimento || '',
-    nomeMae: initialData?.nomeMae || '',
-    endereco: initialData?.endereco || '',
-    contato: initialData?.contato || '',
-    bairro: initialData?.bairro || '',
-    observacao: initialData?.observacao || '',
+    // Campos removidos: cartaoSus, codCid, nomeMae, endereco, contato, bairro, observacao
+    cartaoSus: '',
+    codCid: '',
+    nomeMae: '',
+    endereco: '',
+    contato: '',
+    bairro: '',
+    observacao: '',
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     
     // Formatação específica para CPF
@@ -44,27 +44,6 @@ const PatientForm = ({ initialData, onSuccess }: PatientFormProps) => {
         .replace(/(-\d{2})\d+?$/, '$1');
       
       setFormData({ ...formData, [name]: formattedCpf });
-      return;
-    }
-    
-    // Formatação para cartão SUS
-    if (name === 'cartaoSus') {
-      const formattedSus = value
-        .replace(/\D/g, '')
-        .substring(0, 15);
-      
-      setFormData({ ...formData, [name]: formattedSus });
-      return;
-    }
-    
-    // Formatação para telefone
-    if (name === 'contato') {
-      const formattedPhone = value
-        .replace(/\D/g, '')
-        .replace(/^(\d{2})(\d)/g, '($1) $2')
-        .replace(/(\d)(\d{4})$/, '$1-$2');
-      
-      setFormData({ ...formData, [name]: formattedPhone });
       return;
     }
     
@@ -91,11 +70,11 @@ const PatientForm = ({ initialData, onSuccess }: PatientFormProps) => {
         
         // Limpar o formulário após adição
         setFormData({
+          nome: '',
           cpf: '',
+          dataNascimento: '',
           cartaoSus: '',
           codCid: '',
-          nome: '',
-          dataNascimento: '',
           nomeMae: '',
           endereco: '',
           contato: '',
@@ -122,130 +101,43 @@ const PatientForm = ({ initialData, onSuccess }: PatientFormProps) => {
         {initialData ? 'Editar Paciente' : 'Cadastrar Novo Paciente'}
       </h2>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="cpf">CPF</Label>
-            <Input
-              id="cpf"
-              name="cpf"
-              placeholder="000.000.000-00"
-              value={formData.cpf}
-              onChange={handleChange}
-              required
-              maxLength={14}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="cartaoSus">Cartão SUS</Label>
-            <Input
-              id="cartaoSus"
-              name="cartaoSus"
-              placeholder="000 0000 0000 0000"
-              value={formData.cartaoSus}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="nome">Nome do Paciente</Label>
-            <Input
-              id="nome"
-              name="nome"
-              placeholder="Nome completo"
-              value={formData.nome}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="dataNascimento">Data de Nascimento</Label>
-            <Input
-              id="dataNascimento"
-              name="dataNascimento"
-              type="date"
-              value={formData.dataNascimento}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="codCid">Código CID</Label>
-            <Input
-              id="codCid"
-              name="codCid"
-              placeholder="Ex: J11"
-              value={formData.codCid}
-              onChange={handleChange}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="nomeMae">Nome da Mãe</Label>
-            <Input
-              id="nomeMae"
-              name="nomeMae"
-              placeholder="Nome completo da mãe"
-              value={formData.nomeMae}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="endereco">Endereço</Label>
-            <Input
-              id="endereco"
-              name="endereco"
-              placeholder="Rua, número"
-              value={formData.endereco}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="bairro">Bairro</Label>
-            <Input
-              id="bairro"
-              name="bairro"
-              placeholder="Bairro"
-              value={formData.bairro}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="contato">Contato</Label>
-            <Input
-              id="contato"
-              name="contato"
-              placeholder="(00) 00000-0000"
-              value={formData.contato}
-              onChange={handleChange}
-              required
-            />
-          </div>
-        </div>
-        
+      <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
         <div className="space-y-2">
-          <Label htmlFor="observacao">Observação</Label>
-          <Textarea
-            id="observacao"
-            name="observacao"
-            placeholder="Informações adicionais sobre o paciente"
-            value={formData.observacao}
+          <Label htmlFor="nome">Nome do Paciente</Label>
+          <Input
+            id="nome"
+            name="nome"
+            placeholder="Nome completo"
+            value={formData.nome}
             onChange={handleChange}
-            rows={3}
+            required
           />
         </div>
         
-        <div className="flex justify-end">
+        <div className="space-y-2">
+          <Label htmlFor="cpf">CPF</Label>
+          <Input
+            id="cpf"
+            name="cpf"
+            placeholder="000.000.000-00"
+            value={formData.cpf}
+            onChange={handleChange}
+            maxLength={14}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="dataNascimento">Data de Nascimento</Label>
+          <Input
+            id="dataNascimento"
+            name="dataNascimento"
+            type="date"
+            value={formData.dataNascimento}
+            onChange={handleChange}
+          />
+        </div>
+        
+        <div className="flex justify-end pt-4">
           <Button
             type="submit"
             className="bg-health-600 hover:bg-health-700"
