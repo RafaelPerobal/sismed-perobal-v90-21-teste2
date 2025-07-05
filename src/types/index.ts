@@ -1,4 +1,3 @@
-
 // Modelo de Paciente
 export interface Patient {
   id: number;
@@ -38,6 +37,7 @@ export interface Prescription {
   pacienteId: number;
   medicoId: number;
   data: string;
+  dataVencimento?: string; // Data de vencimento opcional
   medicamentos: PrescriptionMedicine[];
   observacoes: string;
 }
@@ -46,4 +46,24 @@ export interface Prescription {
 export interface PrescriptionMedicine {
   medicamentoId: number;
   posologia: string; // Como tomar o medicamento
+}
+
+// Configuração de datas para múltiplas receitas
+export interface PrescriptionDateConfig {
+  enabled: boolean;
+  date: string;
+}
+
+// Objeto para geração de múltiplas receitas
+export interface MultiplePrescriptionsData {
+  pacienteId: number;
+  medicoId: number;
+  medicamentos: PrescriptionMedicine[];
+  observacoes: string;
+  datas: PrescriptionDateConfig[];
+}
+
+// Configuração para impressão
+export interface PrintConfig {
+  showButtons: boolean;
 }
