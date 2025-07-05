@@ -1,12 +1,12 @@
-// Modelo de Paciente (simplificado - campos essenciais)
+
+// Modelo de Paciente
 export interface Patient {
   id: number;
-  nome: string; // Campo obrigatório
-  cpf: string; // Campo opcional
-  dataNascimento: string; // Campo opcional
-  // Campos mantidos para compatibilidade com código existente, mas não usados nos formulários
+  cpf: string;
   cartaoSus: string;
   codCid: string;
+  nome: string;
+  dataNascimento: string;
   nomeMae: string;
   endereco: string;
   contato: string;
@@ -14,22 +14,30 @@ export interface Patient {
   observacao: string;
 }
 
-// Modelo de Medicamento (simplificado)
+// Modelo de Medicamento
 export interface Medicine {
   id: number;
-  nome: string; // Denominação Genérica
-  dosagem: string; // Concentração 
-  apresentacao: string; // Ex: comprimido, xarope, injeção
-  // Campo mantido para compatibilidade, mas removido do formulário
+  nome: string;
   descricao: string;
+  dosagem: string;
+  apresentacao: string; // Ex: comprimido, xarope, injeção
 }
 
-// Modelo de Receita (sem referência ao médico)
+// Modelo de Médico
+export interface Doctor {
+  id: number;
+  nome: string;
+  crm: string;
+  especialidade: string;
+  contato: string;
+}
+
+// Modelo de Receita
 export interface Prescription {
   id: number;
   pacienteId: number;
+  medicoId: number;
   data: string;
-  dataVencimento?: string; // Data de vencimento opcional
   medicamentos: PrescriptionMedicine[];
   observacoes: string;
 }
@@ -38,23 +46,4 @@ export interface Prescription {
 export interface PrescriptionMedicine {
   medicamentoId: number;
   posologia: string; // Como tomar o medicamento
-}
-
-// Configuração de datas para múltiplas receitas
-export interface PrescriptionDateConfig {
-  enabled: boolean;
-  date: string;
-}
-
-// Objeto para geração de múltiplas receitas (sem médico)
-export interface MultiplePrescriptionsData {
-  pacienteId: number;
-  medicamentos: PrescriptionMedicine[];
-  observacoes: string;
-  datas: PrescriptionDateConfig[];
-}
-
-// Configuração para impressão
-export interface PrintConfig {
-  showButtons: boolean;
 }

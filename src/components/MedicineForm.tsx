@@ -5,6 +5,7 @@ import { addMedicine, updateMedicine } from '@/utils/storage';
 import { Medicine } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import {
@@ -39,13 +40,12 @@ const MedicineForm = ({ initialData, onSuccess }: MedicineFormProps) => {
   
   const [formData, setFormData] = useState<Omit<Medicine, 'id'>>({
     nome: initialData?.nome || '',
+    descricao: initialData?.descricao || '',
     dosagem: initialData?.dosagem || '',
     apresentacao: initialData?.apresentacao || '',
-    // Campo removido: descricao
-    descricao: '',
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
@@ -75,9 +75,9 @@ const MedicineForm = ({ initialData, onSuccess }: MedicineFormProps) => {
         // Limpar o formulário após adição
         setFormData({
           nome: '',
+          descricao: '',
           dosagem: '',
           apresentacao: '',
-          descricao: '',
         });
       }
       
@@ -99,9 +99,9 @@ const MedicineForm = ({ initialData, onSuccess }: MedicineFormProps) => {
         {initialData ? 'Editar Medicamento' : 'Cadastrar Novo Medicamento'}
       </h2>
       
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="nome">Denominação Genérica</Label>
+          <Label htmlFor="nome">Nome do Medicamento</Label>
           <Input
             id="nome"
             name="nome"
@@ -112,36 +112,50 @@ const MedicineForm = ({ initialData, onSuccess }: MedicineFormProps) => {
           />
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="dosagem">Dosagem</Label>
+            <Input
+              id="dosagem"
+              name="dosagem"
+              placeholder="Ex: 500mg"
+              value={formData.dosagem}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="apresentacao">Apresentação</Label>
+            <Select
+              value={formData.apresentacao}
+              onValueChange={handleSelectChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                {APRESENTACOES.map((tipo) => (
+                  <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
         <div className="space-y-2">
-          <Label htmlFor="dosagem">Concentração</Label>
-          <Input
-            id="dosagem"
-            name="dosagem"
-            placeholder="Ex: 500mg"
-            value={formData.dosagem}
+          <Label htmlFor="descricao">Descrição</Label>
+          <Textarea
+            id="descricao"
+            name="descricao"
+            placeholder="Informações adicionais sobre o medicamento"
+            value={formData.descricao}
             onChange={handleChange}
-            required
+            rows={3}
           />
         </div>
         
-        <div className="space-y-2">
-          <Label htmlFor="apresentacao">Apresentação</Label>
-          <Select
-            value={formData.apresentacao}
-            onValueChange={handleSelectChange}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione" />
-            </SelectTrigger>
-            <SelectContent>
-              {APRESENTACOES.map((tipo) => (
-                <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="flex justify-end pt-4">
+        <div className="flex justify-end">
           <Button
             type="submit"
             className="bg-health-600 hover:bg-health-700"

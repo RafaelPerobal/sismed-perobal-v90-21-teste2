@@ -4,15 +4,11 @@ import { useToast } from "@/hooks/use-toast";
 import { 
   addPrescription, 
   getPatientById, 
+  getDoctors, 
   getMedicines, 
   getMedicineById 
 } from '@/utils/storage';
-import { 
-  Medicine, 
-  Prescription, 
-  PrescriptionMedicine,
-  PrescriptionDateConfig
-} from '@/types';
+import { Medicine, Doctor, Prescription, PrescriptionMedicine } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,9 +23,15 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Search, Plus, Trash2 } from "lucide-react";
-import PrescriptionDateSelector from './PrescriptionDateSelector';
 
 interface PrescriptionFormProps {
   patientId?: number;
@@ -39,23 +41,23 @@ interface PrescriptionFormProps {
 const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [allMedicines, setAllMedicines] = useState<Medicine[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMedicine, setSelectedMedicine] = useState<number | null>(null);
   const [posologia, setPosologia] = useState("");
-  const [prescriptionDates, setPrescriptionDates] = useState<PrescriptionDateConfig[]>([
-    { enabled: true, date: new Date().toISOString().split('T')[0] }
-  ]);
   
   const [formData, setFormData] = useState<Omit<Prescription, 'id'>>({
     pacienteId: patientId || 0,
+    medicoId: 0,
     data: new Date().toISOString().split('T')[0],
     medicamentos: [],
     observacoes: '',
   });
 
-  // Carregar medicamentos
+  // Carregar médicos e paciente selecionado
   useEffect(() => {
+    setDoctors(getDoctors());
     setAllMedicines(getMedicines());
     
     if (patientId) {
@@ -74,9 +76,13 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
     med.nome.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+  
+  const handleDoctorChange = (value: string) => {
+    setFormData({ ...formData, medicoId: Number(value) });
   };
 
   const addMedicineToList = () => {
@@ -123,62 +129,32 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
       setIsSubmitting(false);
       return;
     }
+    
+    if (!formData.medicoId) {
+      toast({
+        title: "Médico não selecionado",
+        description: "Selecione um médico para a receita",
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
-      // Verificar se estamos gerando múltiplas receitas
-      const enabledDates = prescriptionDates.filter(d => d.enabled);
-      
-      if (enabledDates.length > 1) {
-        // Gerar múltiplas receitas
-        enabledDates.forEach((dateConfig) => {
-          const prescriptionData = {
-            ...formData,
-            data: dateConfig.date
-          };
-          
-          addPrescription(prescriptionData);
-        });
-        
-        toast({
-          title: `${enabledDates.length} receitas geradas`,
-          description: `Foram geradas ${enabledDates.length} receitas com sucesso`,
-        });
-      } else if (enabledDates.length === 1) {
-        // Gerar uma única receita com a data selecionada
-        const prescriptionData = {
-          ...formData,
-          data: enabledDates[0].date
-        };
-        
-        addPrescription(prescriptionData);
-        
-        toast({
-          title: "Receita gerada",
-          description: "A receita foi gerada com sucesso",
-        });
-      } else {
-        toast({
-          title: "Nenhuma data selecionada",
-          description: "Selecione pelo menos uma data para gerar a receita",
-          variant: "destructive"
-        });
-        setIsSubmitting(false);
-        return;
-      }
+      addPrescription(formData);
+      toast({
+        title: "Receita gerada",
+        description: "A receita foi gerada com sucesso",
+      });
       
       // Limpar o formulário
       setFormData({
         pacienteId: patientId || 0,
+        medicoId: 0,
         data: new Date().toISOString().split('T')[0],
         medicamentos: [],
         observacoes: '',
       });
-      
-      // Resetar datas
-      setPrescriptionDates([{ 
-        enabled: true, 
-        date: new Date().toISOString().split('T')[0] 
-      }]);
       
       if (onSuccess) onSuccess();
     } catch (error) {
@@ -214,12 +190,37 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
       )}
       
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <PrescriptionDateSelector 
-            dates={prescriptionDates}
-            onChange={setPrescriptionDates}
-            initialDate={formData.data}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="data">Data da Receita</Label>
+            <Input
+              id="data"
+              name="data"
+              type="date"
+              value={formData.data}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="medicoId">Médico</Label>
+            <Select
+              value={formData.medicoId.toString()}
+              onValueChange={handleDoctorChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o médico" />
+              </SelectTrigger>
+              <SelectContent>
+                {doctors.map((doctor) => (
+                  <SelectItem key={doctor.id} value={doctor.id.toString()}>
+                    {doctor.nome} - CRM: {doctor.crm}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <Tabs defaultValue="add" className="w-full">
@@ -374,9 +375,7 @@ const PrescriptionForm = ({ patientId, onSuccess }: PrescriptionFormProps) => {
             className="bg-health-600 hover:bg-health-700"
             disabled={isSubmitting || !patientId || formData.medicamentos.length === 0}
           >
-            {isSubmitting ? 'Gerando...' : prescriptionDates.filter(d => d.enabled).length > 1 
-              ? `Gerar ${prescriptionDates.filter(d => d.enabled).length} Receitas` 
-              : 'Gerar Receita'}
+            {isSubmitting ? 'Gerando...' : 'Gerar Receita'}
           </Button>
         </div>
       </form>

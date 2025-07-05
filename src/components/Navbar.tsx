@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from 'react-router-dom';
-import { User, FileText, Pill } from 'lucide-react';
+import { User, FileText, Stethoscope, Pill } from 'lucide-react';
 
 const Navbar = () => {
   const location = useLocation();
@@ -42,6 +42,13 @@ const Navbar = () => {
                   Medicamentos
                 </Link>
                 <Link
+                  to="/doctors"
+                  className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/doctors')}`}
+                >
+                  <Stethoscope className="inline-block mr-1 h-4 w-4" />
+                  Médicos
+                </Link>
+                <Link
                   to="/prescriptions"
                   className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/prescriptions')}`}
                 >
@@ -56,7 +63,7 @@ const Navbar = () => {
       
       {/* Menu para dispositivos móveis */}
       <div className="md:hidden border-t border-gray-200">
-        <div className="grid grid-cols-3 text-center">
+        <div className="grid grid-cols-4 text-center">
           <Link
             to="/patients"
             className="flex flex-col items-center py-2 text-xs text-gray-600"
@@ -70,6 +77,13 @@ const Navbar = () => {
           >
             <Pill className="h-5 w-5" />
             Medicamentos
+          </Link>
+          <Link
+            to="/doctors"
+            className="flex flex-col items-center py-2 text-xs text-gray-600"
+          >
+            <Stethoscope className="h-5 w-5" />
+            Médicos
           </Link>
           <Link
             to="/prescriptions"

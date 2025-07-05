@@ -1,10 +1,11 @@
 
-import { Patient, Medicine, Prescription } from "../types";
+import { Patient, Medicine, Doctor, Prescription } from "../types";
 
-// Chaves para o localStorage (removendo DOCTORS)
+// Chaves para o localStorage
 const KEYS = {
   PATIENTS: 'sistema-perobal-pacientes',
   MEDICINES: 'sistema-perobal-medicamentos',
+  DOCTORS: 'sistema-perobal-medicos',
   PRESCRIPTIONS: 'sistema-perobal-receitas'
 };
 
@@ -108,7 +109,50 @@ export const getMedicineById = (id: number): Medicine | undefined => {
   return medicines.find(m => m.id === id);
 };
 
-// Receitas (sem referências a médicos)
+// Médicos
+export const getDoctors = (): Doctor[] => {
+  const data = localStorage.getItem(KEYS.DOCTORS);
+  return data ? JSON.parse(data) : [];
+};
+
+export const saveDoctors = (doctors: Doctor[]) => {
+  localStorage.setItem(KEYS.DOCTORS, JSON.stringify(doctors));
+};
+
+export const addDoctor = (doctor: Omit<Doctor, 'id'>): Doctor => {
+  const doctors = getDoctors();
+  const newId = doctors.length > 0 ? Math.max(...doctors.map(d => d.id)) + 1 : 1;
+  
+  const newDoctor = { ...doctor, id: newId };
+  doctors.push(newDoctor);
+  saveDoctors(doctors);
+  return newDoctor;
+};
+
+export const updateDoctor = (doctor: Doctor): Doctor => {
+  const doctors = getDoctors();
+  const index = doctors.findIndex(d => d.id === doctor.id);
+  
+  if (index !== -1) {
+    doctors[index] = doctor;
+    saveDoctors(doctors);
+  }
+  
+  return doctor;
+};
+
+export const deleteDoctor = (id: number): void => {
+  const doctors = getDoctors();
+  const filtered = doctors.filter(d => d.id !== id);
+  saveDoctors(filtered);
+};
+
+export const getDoctorById = (id: number): Doctor | undefined => {
+  const doctors = getDoctors();
+  return doctors.find(d => d.id === id);
+};
+
+// Receitas
 export const getPrescriptions = (): Prescription[] => {
   const data = localStorage.getItem(KEYS.PRESCRIPTIONS);
   return data ? JSON.parse(data) : [];
